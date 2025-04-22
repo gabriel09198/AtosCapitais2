@@ -3,7 +3,7 @@ import ChartOverview from '@/components/chart';
 import { Sales } from '@/components/sales';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BadgeDollarSign, DollarSign, Percent, User } from 'lucide-react';
-export default function Home() {
+export default function dashboard() {
   return (
     <main className="sm:ml-14 p-4">
       <section className="grid grid-cols-2  lg:grid-cols-4 gap-4 ">
