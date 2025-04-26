@@ -1,26 +1,37 @@
-"use client"; 
+'use client'
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link"; // Importação do Link
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
+import { Card, CardContent } from '@/components/ui/card'
+import { login } from '@/services/authService'
 
 export default function Home() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!email || !password) {
-      setError("Por favor, preencha todos os campos.");
-      return;
+      setError('Por favor, preencha todos os campos.')
+      return
     }
-    setError("");
-    console.log("Email:", email, "Password:", password);
-  };
+
+    try {
+      console.log('Enviando login:', { username: email, password }) // veja no console do navegador
+    
+      await login({ username: email, password })
+    
+      router.push('/dashboard') // redireciona se logar com sucesso
+    } catch (err: any) {
+      console.error('Erro completo no login:', err) // veja a mensagem real do backend
+      setError(err.message || 'Erro ao fazer login')
+    }    
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black">
@@ -32,10 +43,9 @@ export default function Home() {
       >
         <Card className="w-full shadow-2xl rounded-2xl bg-white">
           <CardContent className="p-6">
-            {/* Espaço para imagem no topo */}
             <div className="flex justify-center mb-4">
               <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXzzIfA4JgD9IwRtrhhOtqW39J3NBQundgSg&s" // substitua com o caminho da sua imagem
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXzzIfA4JgD9IwRtrhhOtqW39J3NBQundgSg&s"
                 alt="Logo"
                 className="h-20 w-auto"
               />
@@ -45,7 +55,7 @@ export default function Home() {
 
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
               <Input
-                type="email"
+                type="text"
                 placeholder="Login"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -66,19 +76,16 @@ export default function Home() {
                 </motion.p>
               )}
 
-              {/* Envolvendo o botão com o Link */}
-              <Link href="/dashboard">
-                <Button
-                  type="submit"
-                  className="mt-4 w-full p-4 -600 text-white rounded-lg shadow-lg hover:bg-purple-700 focus:ring-4 focus:ring-500 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-100"
-                >
-                  Entrar
-                </Button>
-              </Link>
+              <Button
+                type="submit"
+                className="mt-4 w-full p-4 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-500 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-100"
+              >
+                Entrar
+              </Button>
             </form>
           </CardContent>
         </Card>
       </motion.div>
     </div>
-  );
+  )
 }
