@@ -1,30 +1,40 @@
-"use client";
+'use client'
 
-import { DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ChartConfig } from "../ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { useEffect, useState } from 'react'
+import { DollarSign } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { fetchDailySalesData } from '@/services/dateService'
 
 export default function ChartOverview() {
-  const chartData = [
-    { month: "Janeiro", desktop: 186, mobile: 80 },
-    { month: "Fevereiro", desktop: 305, mobile: 200 },
-    { month: "Março", desktop: 237, mobile: 120 },
-    { month: "Abril", desktop: 73, mobile: 190 },
-    { month: "Maio", desktop: 209, mobile: 130 },
-    { month: "Junho", desktop: 214, mobile: 140 },
-  ];
+  const [chartData, setChartData] = useState<any[]>([])
 
-  const chartConfig = {
-    desktop: {
-      label: "Desktop",
-      color: "#2563eb",
-    },
-    mobile: {
-      label: "Mobile",
-      color: "#60a5fa",
-    },
-  } satisfies ChartConfig;
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const token = localStorage.getItem('token') || ''
+        const { sales } = await fetchDailySalesData(token)
+
+        const vendasPorMes: { [mes: string]: number } = {}
+
+        sales.forEach((venda) => {
+          const mes = new Date(venda.date).toLocaleString('pt-BR', { month: 'long' })
+          vendasPorMes[mes] = (vendasPorMes[mes] || 0) + Number(venda.value)
+        })
+
+        const dadosFormatados = Object.entries(vendasPorMes).map(([mes, valor]) => ({
+          month: mes.charAt(0).toUpperCase() + mes.slice(1), 
+          total: valor
+        }))
+
+        setChartData(dadosFormatados)
+      } catch (err) {
+        console.error('Erro ao carregar dados do gráfico:', err)
+      }
+    }
+
+    carregarDados()
+  }, [])
 
   return (
     <Card className="w-full md:w-1/2 md:max-w-[600px]">
@@ -40,23 +50,13 @@ export default function ChartOverview() {
         <div className="min-h-[200px] w-full">
           <BarChart width={500} height={300} data={chartData}>
             <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
+            <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
             <YAxis axisLine={false} tickLine={false} />
             <Tooltip />
-            {/* Corrected dataKeys */}
-            <Bar dataKey="desktop" fill={chartConfig.desktop.color} />
-            <Bar dataKey="mobile" fill={chartConfig.mobile.color} />
+            <Bar dataKey="total" fill="#2563eb" />
           </BarChart>
         </div>
-
-      
       </CardContent>
     </Card>
-  );
+  )
 }
